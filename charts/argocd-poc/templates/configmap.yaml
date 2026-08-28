@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-info
+data:
+  logLevel: {{ .Values.logLevel | quote }}
+  chartVersion: {{ .Chart.Version | quote }}
+  environment: {{ .Release.Namespace | quote }}
+  featureFlag: "enabled-in-1.0.1"
