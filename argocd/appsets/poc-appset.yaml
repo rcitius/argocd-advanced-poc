@@ -23,12 +23,12 @@ spec:
             chartVersion: "1.0.1"      # different ACR chart version
             logLevel: error
             replicaCount: "2"
-          # - env: scanmarqed-test
-          #   cluster: shrd-aks-planr-uat-swec-01
-          #   namespace: poc-test
-          #   chartVersion: "1.0.1"      # different ACR chart version
-          #   logLevel: warn
-          #   replicaCount: "3"            
+          - env: scanmarqed-test
+            cluster: shrd-aks-planr-uat-swec-01
+            namespace: poc-test
+            chartVersion: "1.0.1"      # different ACR chart version
+            logLevel: warn
+            replicaCount: "3"            
   template:
     metadata:
       name: 'argocd-poc-{{ .env }}'
