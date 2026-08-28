@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: argocd-poc
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+          # ---------- DEV ----------
+          - env: dev
+            namespace: poc-dev
+            chartVersion: "1.0.0"      # ACR chart version for dev
+            logLevel: info
+            replicaCount: "1"
+          # ---------- TEST ----------
+          - env: test
+            namespace: poc-test
+            chartVersion: "1.0.1"      # different ACR chart version
+            logLevel: error
+            replicaCount: "2"
+  template:
+    metadata:
+      name: 'argocd-poc-{{ .env }}'
+    spec:
+      project: default
+      source:
+        repoURL: scanmarqedcloud.azurecr.io/helm
+        chart: argocd-poc
+        targetRevision: '{{ .chartVersion }}'
+        helm:
+          releaseName: 'argocd-poc-{{ .env }}'
+          valuesObject:
+            logLevel: '{{ .logLevel }}'
+            replicaCount: '{{ .replicaCount }}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{ .namespace }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
