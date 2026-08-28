@@ -11,16 +11,24 @@ spec:
         elements:
           # ---------- DEV ----------
           - env: dev
+            cluster: in-cluster
             namespace: poc-dev
             chartVersion: "1.0.0"      # ACR chart version for dev
             logLevel: info
             replicaCount: "1"
           # ---------- TEST ----------
           - env: test
+            cluster: in-cluster
             namespace: poc-test
             chartVersion: "1.0.1"      # different ACR chart version
             logLevel: error
             replicaCount: "2"
+          - env: scanmarqed-test
+            cluster: shrd-aks-planr-uat-swec-01
+            namespace: poc-test
+            chartVersion: "1.0.1"      # different ACR chart version
+            logLevel: warn
+            replicaCount: "3"            
   template:
     metadata:
       name: 'argocd-poc-{{ .env }}'
@@ -36,7 +44,7 @@ spec:
             logLevel: '{{ .logLevel }}'
             replicaCount: '{{ .replicaCount }}'
       destination:
-        server: https://kubernetes.default.svc
+        name: '{{ .cluster }}'
         namespace: '{{ .namespace }}'
       syncPolicy:
         automated:
