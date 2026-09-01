@@ -13,22 +13,53 @@ spec:
           - env: dev
             cluster: in-cluster
             namespace: poc-dev
-            chartVersion: "1.0.0"      # ACR chart version for dev
+            chartVersion: "1.0.3"
             logLevel: info
             replicaCount: "1"
+            envVars:
+              API_URL:
+                value: "https://dev.internal.example.com"
+              MAX_WORKERS:
+                value: "2"
+              DB_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: argocd-poc-secret
+                    key: db-password
           # ---------- TEST ----------
           - env: test
             cluster: in-cluster
             namespace: poc-test
-            chartVersion: "1.0.1"      # different ACR chart version
+            chartVersion: "1.0.3"
             logLevel: error
             replicaCount: "2"
+            envVars:
+              API_URL:
+                value: "https://test.internal.example.com"
+              MAX_WORKERS:
+                value: "8"
+              DB_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: argocd-poc-secret
+                    key: db-password
+          # ---------- SCANMARQED-TEST ----------
           - env: scanmarqed-test
             cluster: shrd-aks-planr-uat-swec-01
             namespace: poc-test
-            chartVersion: "1.0.1"      # different ACR chart version
+            chartVersion: "1.0.3"
             logLevel: warn
-            replicaCount: "3"            
+            replicaCount: "3"
+            envVars:
+              API_URL:
+                value: "https://uat.internal.example.com"
+              MAX_WORKERS:
+                value: "16"
+              DB_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: argocd-poc-secret
+                    key: db-password        
   template:
     metadata:
       name: 'argocd-poc-{{ .env }}'
@@ -43,6 +74,8 @@ spec:
           valuesObject:
             logLevel: '{{ .logLevel }}'
             replicaCount: '{{ .replicaCount }}'
+            envVars:
+              {{- toYaml .envVars | nindent 14 }}
             image:
               repository: nginx
               tag: "1.27-alpine"

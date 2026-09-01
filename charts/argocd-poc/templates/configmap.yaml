@@ -6,4 +6,4 @@ data:
   logLevel: {{ .Values.logLevel | quote }}
   chartVersion: {{ .Chart.Version | quote }}
   environment: {{ .Release.Namespace | quote }}
-  featureFlag: "enabled-in-1.0.1"
+  envVarNames: {{ keys .Values.envVars | sortAlpha | join "," | quote }}

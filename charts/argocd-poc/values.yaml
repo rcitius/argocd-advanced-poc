@@ -1,12 +1,17 @@
 replicaCount: 1
 
 image:
-  repository: mcr.microsoft.com/oss/nginx/nginx
-  tag: "1.25.3"
+  repository: nginx
+  tag: "1.27-alpine"
   pullPolicy: IfNotPresent
 
-# Default. Overridden per environment from the ApplicationSet.
 logLevel: info
+
+# Common to every environment. Elements in the ApplicationSet
+# add to these, or override individual keys.
+envVars:
+  APP_NAME:
+    value: "argocd-poc"
 
 nodeSelector:
   workload-type: userpool1

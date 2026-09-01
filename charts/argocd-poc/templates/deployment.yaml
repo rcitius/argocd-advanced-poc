@@ -29,9 +29,7 @@ spec:
               value: {{ .Values.logLevel | quote }}
             - name: CHART_VERSION
               value: {{ .Chart.Version | quote }}
-            - name: FEATURE_FLAG
-              value: {{ .Values.featureFlag | quote }}
-          ports:
-            - containerPort: 80
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- range $name, $spec := .Values.envVars }}
+            - name: {{ $name }}
+              {{- toYaml $spec | nindent 14 }}
+            {{- end }}

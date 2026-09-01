@@ -1,6 +1,6 @@
 apiVersion: v2
 name: argocd-poc
-description: Minimal chart proving per-environment chart version + config from a single ApplicationSet file
+description: Multi-env POC chart with per-environment config and env vars
 type: application
-version: 1.0.1
-appVersion: "1.0.1"
+version: 1.0.3
+appVersion: "1.0.3"
