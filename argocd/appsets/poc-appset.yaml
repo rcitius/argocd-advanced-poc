@@ -71,11 +71,14 @@ spec:
         targetRevision: '{{ .chartVersion }}'
         helm:
           releaseName: 'argocd-poc-{{ .env }}'
-          valuesObject:
-            logLevel: '{{ .logLevel }}'
-            replicaCount: '{{ .replicaCount }}'
+          values: |
+            logLevel: {{ .logLevel }}
+            replicaCount: {{ .replicaCount }}
+            image:
+              repository: nginx
+              tag: "1.27-alpine"
             envVars:
-              {{- toYaml .envVars | nindent 14 }}
+              {{- toYaml .envVars | nindent 2 }}
             image:
               repository: nginx
               tag: "1.27-alpine"
