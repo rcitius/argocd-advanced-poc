@@ -1,0 +1,66 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: argocd-poc
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: poc-dev
+            chartVersion: "1.0.3"
+            logLevel: info
+            replicaCount: "1"
+            envVars:
+              API_URL:
+                value: "https://dev.internal.example.com"
+              MAX_WORKERS:
+                value: "2"
+              DB_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: argocd-poc-secret
+                    key: db-password
+          - env: test
+            namespace: poc-test
+            chartVersion: "1.0.3"
+            logLevel: error
+            replicaCount: "2"
+            envVars:
+              API_URL:
+                value: "https://test.internal.example.com"
+              MAX_WORKERS:
+                value: "8"
+              DB_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: argocd-poc-secret
+                    key: db-password
+  template:
+    metadata:
+      name: 'argocd-poc-{{ .env }}'
+    spec:
+      project: default
+      source:
+        repoURL: scanmarqedcloud.azurecr.io/helm
+        chart: argocd-poc
+        targetRevision: '{{ .chartVersion }}'
+        helm:
+          releaseName: 'argocd-poc-{{ .env }}'
+          values: |
+            logLevel: {{ .logLevel }}
+            replicaCount: {{ .replicaCount }}
+            envVars:
+              {{- toYaml .envVars | nindent 2 }}
+      destination:
+        name: in-cluster
+        namespace: '{{ .namespace }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

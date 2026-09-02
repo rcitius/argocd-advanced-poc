@@ -7,8 +7,8 @@ spec:
   project: default
   source:
     repoURL: https://github.com/rcitius/argocd-advanced-poc.git
-    targetRevision: argostage2
-    path: argocd/appsets
+    targetRevision: argostage3
+    path: argocd/appsets/uat
     directory:
       recurse: true
   destination:
