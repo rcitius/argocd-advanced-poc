@@ -10,11 +10,12 @@ No `values-dev.yaml` / `values-prod.yaml`. No branch-per-environment. No repo-pe
 
 `main` holds this README and the shared Helm chart. **Each topology lives on its own branch**, because they are genuine alternatives rather than iterations — the later ones do not supersede the earlier ones.
 
-| Branch | Topology | What it adds |
+| Branch | Topology | Description |
 |---|---|---|
-| `argostage1` | Hub — one ArgoCD, many clusters | Per-environment chart version, namespace, cluster and config from one file |
-| `argostage2` | Hub | Per-environment environment variables and `secretKeyRef` |
-| `argostage3` | ArgoCD on every cluster | A dedicated appset file per cluster; **no cross-cluster credentials** |
+| `main` | — | Landing page and shared Helm chart. Explains the problem, the mechanism and which topology to read. Deliberately contains no ArgoCD manifests. |
+| `argostage1` | Hub | First working cut. One ApplicationSet drives three environments across two clusters, each with its own chart version, namespace and log level. |
+| `argostage2` | Hub | Extends stage 1 with per-environment environment variables and `secretKeyRef`. Credentials are named in Git, never stored in it. |
+| `argostage3` | Per-cluster | ArgoCD on every cluster, one appset file per cluster, every destination `in-cluster`. No cross-cluster credentials exist at all. |
 
 Read the topology comparison below to see which one fits which constraint. Everything else — the chart, the reconcile behaviour, the per-environment mechanics — is identical across all three.
 
@@ -178,14 +179,6 @@ Each cluster runs its own ArgoCD, and each `bootstrap` watches only its own dire
 The honest answer is that it depends on what your security posture will tolerate. Topology A is the better operator experience and the stronger version of the single-file property. Topology B removes an entire class of credential from the design.
 
 Everything else — the chart, the per-environment chart versions, the env vars, the secret references, the reconcile behaviour — is identical between them. The single-file property survives in B too; it just becomes single-file-per-cluster.
-
-### Branch map
-
-| Branch | Contents |
-|---|---|
-| `argostage1` | Hub model, first working version: per-environment chart version and config |
-| `argostage2` | Hub model plus per-environment env vars and `secretKeyRef` |
-| `argostage3` | Per-cluster ArgoCD, dedicated appset file per cluster |
 
 ---
 
