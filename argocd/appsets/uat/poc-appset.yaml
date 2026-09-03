@@ -27,6 +27,8 @@ spec:
   template:
     metadata:
       name: 'argocd-poc-{{ .env }}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
     spec:
       project: default
       source:

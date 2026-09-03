@@ -130,6 +130,66 @@ Three placement rules, each learned the hard way:
 
 ---
 
+## Two topologies, both built
+
+The layout above is the **hub** model: one ArgoCD instance, on one cluster, deploying to all the others. It is the version that delivers the strongest form of the single-file claim — every environment on every cluster, readable in one place.
+
+It has a cost: the hub holds a credential for every cluster it manages. A ServiceAccount token per target, stored as a Secret, plus network reachability from hub to every target API server. That is the first thing a security review will ask about.
+
+So the same POC was also built the other way.
+
+### Topology A — hub (branch `argostage2`)
+
+```
+argocd/
+├── bootstrap.yaml              # applied once, on the hub
+└── appsets/
+    └── poc-appset.yaml         # every environment, every cluster
+```
+
+`destination.name` per element routes each environment to a registered cluster. Adding a cluster means a one-time ServiceAccount + labelled Secret, then one word of YAML.
+
+- Single pane of glass across all clusters
+- One installation to operate and upgrade
+- Requires stored cross-cluster credentials
+
+### Topology B — ArgoCD per cluster (branch `argostage3`)
+
+```
+argocd/
+├── bootstrap/
+│   ├── dev.yaml                # applied on the dev cluster
+│   └── uat.yaml                # applied on the uat cluster
+└── appsets/
+    ├── dev/
+    │   └── poc-appset.yaml     # environments on the dev cluster
+    └── uat/
+        └── poc-appset.yaml     # environments on the uat cluster
+```
+
+Each cluster runs its own ArgoCD, and each `bootstrap` watches only its own directory. Every `destination` is `in-cluster`. The directory boundary does the isolation — no filtering, no templating tricks, no cluster registration.
+
+- **No cross-cluster credentials at all.** Nothing to leak, rotate, or scope.
+- Blast radius contained per cluster
+- N installations to operate
+- Environment config now spans one file per cluster, so "show me every environment side by side" stops being a single `cat`
+
+### Which to choose
+
+The honest answer is that it depends on what your security posture will tolerate. Topology A is the better operator experience and the stronger version of the single-file property. Topology B removes an entire class of credential from the design.
+
+Everything else — the chart, the per-environment chart versions, the env vars, the secret references, the reconcile behaviour — is identical between them. The single-file property survives in B too; it just becomes single-file-per-cluster.
+
+### Branch map
+
+| Branch | Contents |
+|---|---|
+| `argostage1` | Hub model, first working version: per-environment chart version and config |
+| `argostage2` | Hub model plus per-environment env vars and `secretKeyRef` |
+| `argostage3` | Per-cluster ArgoCD, dedicated appset file per cluster |
+
+---
+
 ## Environment variables and secrets
 
 `envVars` is a **map** of name to spec, where the spec is either a plain value or a secret reference:
